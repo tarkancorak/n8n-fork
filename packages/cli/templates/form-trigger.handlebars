@@ -226,6 +226,7 @@
 
 			.multiselect-checkbox {
 				vertical-align: middle;
+				min-width: 18px;
 			}
 
 			input[type='checkbox'] {
@@ -739,19 +740,13 @@
 							}
 
 							return;
-						}).then(() => {
-							window.addEventListener('storage', function(event) {
-								if (event.key === 'n8n_redirect_to_next_form_test_page' && event.newValue) {
-									const newUrl = event.newValue;
-									localStorage.removeItem('n8n_redirect_to_next_form_test_page');
-									window.location.replace(newUrl);
-								}
-							});
 						})
 						.catch(function (error) {
 							console.error('Error:', error);
 						});
 
+					const isWaitingForm = window.location.href.includes('form-waiting');
+					if(isWaitingForm) {
 						const interval = setInterval(function() {
 							const isSubmited = document.querySelector('#submitted-form').style.display;
 							if(isSubmited === 'block') {
@@ -760,6 +755,7 @@
 							}
 							window.location.reload();
 						}, 2000);
+					}
 				}
 			});
 		</script>

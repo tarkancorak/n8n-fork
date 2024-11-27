@@ -35,6 +35,7 @@ import {
 	createDeferredPromise,
 	ErrorReporterProxy as ErrorReporter,
 	ErrorReporterProxy,
+	ExecutionCancelledError,
 	FORM_NODE_TYPE,
 	NodeHelpers,
 	NodeOperationError,
@@ -463,6 +464,11 @@ export async function executeWebhook(
 			projectId: project?.id,
 		};
 
+		// When resuming from a wait node, copy over the pushRef from the execution-data
+		if (!runData.pushRef) {
+			runData.pushRef = runExecutionData.pushRef;
+		}
+
 		let responsePromise: IDeferredPromise<IN8nHttpFullResponse> | undefined;
 		if (responseMode === 'responseNode') {
 			responsePromise = createDeferredPromise<IN8nHttpFullResponse>();
@@ -756,7 +762,9 @@ export async function executeWebhook(
 						);
 					}
 
-					throw new InternalServerError(e.message);
+					const internalServerError = new InternalServerError(e.message);
+					if (e instanceof ExecutionCancelledError) internalServerError.level = 'warning';
+					throw internalServerError;
 				});
 		}
 		return executionId;
